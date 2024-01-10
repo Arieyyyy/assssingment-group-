@@ -58,3 +58,24 @@ app.listen(port, () => {
  console.log(`Example app listening on port ${port}`)
 })
 
+async function verifyToken(req, res, next) {
+  let header = req.headers.authorization;
+  if (!header) {
+      return res.status(401).send('Unauthorized');
+  }
+
+  let token = header.split(' ')[1];
+
+  jwt.verify(token, 'your-secret-key', function (err, decoded) {
+      if (err) {
+          return res.status(401).send('Unauthorized');
+      }
+      else {
+          console.log(decoded);
+          if (decoded.username != username) {
+              return res.status(401).send('Again Unauthorized');
+          }
+      }
+      next();
+  });
+}
