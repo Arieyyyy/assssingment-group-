@@ -3,6 +3,7 @@ const app = express()
 const port = process.env.PORT || 3000;
 const bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
+app.use(express.json())
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = "mongodb+srv://b022210082:password1234@cluster0.uhzytme.mongodb.net/?retryWrites=true&w=majority";
@@ -28,7 +29,8 @@ const client = new MongoClient(uri, {
     }
   }
   run().catch(console.dir);
-app.use(express.json())
+
+
 app.get('/', (req, res) => {
 })
 
@@ -53,11 +55,6 @@ app.post('/login',(req, res)=> {
     }
     })
 
-
-app.listen(port, () => {
- console.log(`Example app listening on port ${port}`)
-})
-
 async function verifyToken(req, res, next) {
   let header = req.headers.authorization;
   if (!header) {
@@ -79,3 +76,8 @@ async function verifyToken(req, res, next) {
       next();
   });
 }
+
+app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`)
+   })
+   
