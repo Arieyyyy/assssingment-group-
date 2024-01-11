@@ -10,5 +10,3 @@ app.post('/students/timeline', (req, res) => {
 app.post('/students/ViewReport', (req, res) => {
 })
 
-app.post('/students/logout', (req, res) => {
-})
