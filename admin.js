@@ -32,7 +32,17 @@ const client = new MongoClient(uri, {
 
 
 
-app.post ('/Admin/Login',(req,res)=>{
+app.post ('/Admin/Login',async(req,res)=>{
+    const { username, password } = req.body;
+const passwordsama = await client.db("AttendanceManagementSystem").collection("User").findOne({
+     "password": password,
+    });
+  if (passwordsama == true){
+        res.send('login success')
+  }
+  else{
+        res.send('login failed')
+  }
  
 });
 
@@ -63,10 +73,15 @@ app.post('/Admin/AddStudent', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-app.post ('/Admin/Student List',(req,res)=>{
-
+app.get ('/Admin/StudentList',async(req,res)=>{
+    const existingUser = await client.db("AttendanceManagementSystem").collection("User").find( 
+       { role: "student" 
+    }).toArray();
+    res.send(existingUser);
 });
 
+
+
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-   })
+    console.log(Example app listening on port ${port})
+   })
