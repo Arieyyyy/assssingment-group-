@@ -61,6 +61,7 @@ app.post('/Admin/AddStudent', async (req, res) => {
         await client.db("AttendanceManagementSystem").collection("User").insertOne({
             username: username,
             password: hashedPassword,
+            student_id: StudentId,
             role: role,
             matrix: matrix,
             email: email
