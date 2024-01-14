@@ -1,2 +1,4 @@
 # assignment-group-
-assingment group ARIBAH, SHAHIRA, SYAHEERA, ALISSYA
+assignment group ARIBAH, SHAHIRA, SYAHEERA, ALISSYA
+
+

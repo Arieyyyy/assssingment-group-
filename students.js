@@ -31,29 +31,6 @@ async function run() {
 }
 run().catch(console.dir);
 
-
-app.post('/students/login', (req, res) => {
-})
-
-async function RecordAttendance(student_id, date, status) {
-    try {
-        const database = client.db('AttendanceManagementSystem');
-        const collection = database.collection('Attendances');
-
-        const user = {
-            student_id: student_id,
-            date: date,
-            status: status,
-        };
-
-        await collection.insertOne(user);
-        console.log("User created successfully");
-    }
-    catch (error) {
-        console.error("Error creating user:", error);
-    }
-}
-
 app.post('/Students/RecordAttendance', (req, res) => {
     const { student_id, date, status } = req.body;
     try {
@@ -79,7 +56,6 @@ app.post('/students/viewDetails' , async (req, res) => {
     }
 });
 
-
 app.post('/students/ViewReport', async (req, res) => {
     try {
         const list = await view.viewReport();
@@ -104,9 +80,25 @@ async function viewDetails(student_id) {
         console.error("Error creating user:", error);
     }
 }
-app.get('/logout', (req, res) => {
-    res.status(200).send('Logout successfuly');
-});
+
+async function RecordAttendance(student_id, date, status) {
+    try {
+        const database = client.db('AttendanceManagementSystem');
+        const collection = database.collection('Attendances');
+
+        const user = {
+            student_id: student_id,
+            date: date,
+            status: status,
+        };
+
+        await collection.insertOne(user);
+        console.log("User created successfully");
+    }
+    catch (error) {
+        console.error("Error creating user:", error);
+    }
+}
 
 app.listen(port, () => {
     console.log('Example app listening on port ${port}');

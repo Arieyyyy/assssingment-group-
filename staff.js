@@ -1,6 +1,3 @@
-app.post('/Staff/login', (req, res) => {});
-
-
 app.post('/Staff/viewReport', (req, res) => {
     const { staff_id, date } = req.body;
 

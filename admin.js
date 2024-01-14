@@ -32,20 +32,6 @@ const client = new MongoClient(uri, {
 
 
 
-app.post ('/Admin/Login',async(req,res)=>{
-    const { username, password } = req.body;
-const passwordsama = await client.db("AttendanceManagementSystem").collection("User").findOne({
-     "password": password,
-    });
-  if (passwordsama == true){
-        res.send('login success')
-  }
-  else{
-        res.send('login failed')
-  }
- 
-});
-
 app.post('/Admin/AddStudent', async (req, res) => {
     const { username, password, role, matrix, email } = req.body;
 
