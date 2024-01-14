@@ -3,6 +3,7 @@ const app = express()
 const port = process.env.PORT || 3000;
 const bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
+
 app.use(express.json())
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -16,7 +17,7 @@ const client = new MongoClient(uri, {
       deprecationErrors: true,
     }
   });
-  
+
   async function run() {
     try {
       // Connect the client to the server	(optional starting in v4.7)
@@ -35,14 +36,14 @@ const client = new MongoClient(uri, {
 app.post('/login', (req, res) => {
 })
 
-app.post('/register',(req,res)=>{
-    const { username, password } = req.body;
-    console.log(username, password);
-    const hash = bcrypt.hashSync (password, 10);
+//app.post('/register',(req,res)=>{
+  //  const { username, password } = req.body;
+    //console.log(username, password);
+    //const hash = bcrypt.hashSync (password, 10);
    // client.db('assingment group').collection('users')
    // .insertOne ({"useername": username, "password":hash}); 
-    res.send("register success")
-})
+    //res.send("register success")
+//})
 
 app.post('/login',(req, res)=> {
     const { username, password } = req.body;

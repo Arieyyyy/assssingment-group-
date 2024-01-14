@@ -61,7 +61,6 @@ app.post('/Admin/AddStudent', async (req, res) => {
         await client.db("AttendanceManagementSystem").collection("User").insertOne({
             username: username,
             password: hashedPassword,
-            student_id: StudentId,
             role: role,
             matrix: matrix,
             email: email
@@ -84,5 +83,5 @@ app.get ('/Admin/StudentList',async(req,res)=>{
 
 
 app.listen(port, () => {
-    console.log(Example app listening on port ${port})
-   })
+    console.log(Example app listening on port${port})
+})
