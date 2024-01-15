@@ -31,7 +31,7 @@ async function run() {
 }
 run().catch(console.dir);
 
-app.post('/Staff/viewReport', (req, res) => {
+app.post('/Staff/viewReport', async (req, res) => {
     const { staff_id, date } = req.body;
 
     try {
