@@ -107,6 +107,57 @@ app.post('/students/viewDetails', async (req, res) => {
   }
 });
 
+app.post('/students/ViewReport', async (req, res) => {
+  const { username, student_id, faculty, programme } = req.body;
+  try {
+      const list = await viewReport(username, student_id, faculty, programme);
+      console.log(list);
+      return res.status(201).send("View Report Successful");
+  }
+  catch (error) {
+      console.error(error);
+      return res.status(500).send("Internal Server Error");
+  }
+})
+
+app.post('/Admin/createFaculty', async (req, res) => {
+  const { name, code, programs, students } = req.body;
+  try {
+
+    await client.db("AttendanceManagementSystem").collection("Faculties").insertOne({
+        name: name,
+        code: code,
+        programs: programs,
+        students: students,
+
+    })
+
+    res.send('Faculty created successfully');
+} catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+}
+});
+
+app.post('/Admin/createPrograms', async (req, res) => {
+  const { name, code, faculty, subject, students } = req.body;
+  try {
+
+    await client.db("AttendanceManagementSystem").collection("Programs").insertOne({
+        name: name,
+        code: code,
+        faculty: faculty,
+        subject: subject,
+        students: students,
+
+    })
+
+    res.send('Program created successfully');
+} catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+}
+});
 
 async function viewDetails(student_id) {
   try {
@@ -120,6 +171,58 @@ async function viewDetails(student_id) {
     console.error("Error creating user:", error);
   }
 }
+
+async function viewReport(username, student_id, faculty, programme) {
+  try {
+      const database = client.db('AttendanceManagementSystem');
+      const usersCollection = database.collection('User');
+      const facultiesCollection = database.collection('Faculties');
+      const programmesCollection = database.collection('Programs');
+
+      // Query the 'Users' collection for user information
+      const userQuery = {
+          username: username,
+          student_id: student_id,
+      };
+      console.log("User Query:", userQuery);
+      const user = await usersCollection.findOne(userQuery);
+      
+        console.log("User:", user);
+
+      if (user) {
+          // Query the 'Faculties' collection for faculty information
+          const facultyQuery = {
+              student_id: student_id,
+          };
+          console.log("Faculty Query:", facultyQuery);
+          const facultyData = await facultiesCollection.findOne(facultyQuery);
+          console.log("Faculty Data:", facultyData);
+
+          // Query the 'Programs' collection for programme information
+          const programmeQuery = {
+              name: programme,
+          };
+          console.log("Programme Query:", programmeQuery);
+          const programmeData = await programmesCollection.findOne(programmeQuery);
+          console.log("Programme Data:", programmeData);
+
+          return {
+              user: user,
+              facultyData: facultyData,
+              programmeData: programmeData,
+          };
+      } else {
+          console.log("User not found");
+          return null;
+      }
+  } catch (error) {
+      console.error("Error viewing report:", error);
+      throw error;
+  }
+}
+
+
+
 
 async function RecordAttendance(student_id, date, status) {
   try {

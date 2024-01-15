@@ -105,7 +105,7 @@ async function viewReport(name, student_id, faculty, programme) {
         const database = client.db('AttendanceManagementSystem');
         const usersCollection = database.collection('Users');
         const facultiesCollection = database.collection('Faculties');
-        const programmessCollection = database.collection('Programs');
+        const programmesCollection = database.collection('Programs');
 
         // Query the 'Users' collection for user information
         const userQuery = {
