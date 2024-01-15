@@ -58,7 +58,7 @@ app.post('/students/viewDetails' , async (req, res) => {
 
 app.post('/students/ViewReport', async (req, res) => {
     try {
-        const list = await view.viewReport();
+        const list = await viewReport();
         console.log(list);
         return res.status(201).send("View Report Successful");
     }
@@ -99,6 +99,44 @@ async function RecordAttendance(student_id, date, status) {
         console.error("Error creating user:", error);
     }
 }
+
+async function viewReport(name, student_id, faculty, programme) {
+    try {
+        const database = client.db('AttendanceManagementSystem');
+        const usersCollection = database.collection('Users');
+        const facultiesCollection = database.collection('Faculties');
+        const programmessCollection = database.collection('Programs');
+
+        // Query the 'Users' collection for user information
+        const userQuery = {
+            name: name,
+            student_id: student_id,
+        };
+        const user = await usersCollection.findOne(userQuery);
+
+        if (user) {
+            // Query the 'Faculties' collection for faculty information
+            const facultyQuery = {
+                faculty: faculty,
+            };
+            const facultyData = await facultiesCollection.findOne(facultyQuery);
+
+            // Query the 'Programmes' collection for programme information
+            const programmeQuery = {
+                programme: programme,
+            };
+            const programmeData = await programmesCollection.findOne(programmeQuery);
+
+            // Do something with the user, faculty, and programme data
+            console.log("User found. User:", user, "Faculty Data:", facultyData, "Programme Data:", programmeData);
+        } else {
+            console.log("User not found");
+        }
+    } catch (error) {
+        console.error("Error viewing report:", error);
+    }
+}
+
 
 app.listen(port, () => {
     console.log('Example app listening on port ${port}');

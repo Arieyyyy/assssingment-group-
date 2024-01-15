@@ -107,6 +107,7 @@ app.post('/students/viewDetails', async (req, res) => {
   }
 });
 
+
 async function viewDetails(student_id) {
   try {
     const database = client.db('AttendanceManagementSystem');

@@ -31,7 +31,6 @@ const client = new MongoClient(uri, {
   run().catch(console.dir);
 
 
-
 app.post('/Admin/AddStudent', async (req, res) => {
     const { username, password, role, matrix, email } = req.body;
 
