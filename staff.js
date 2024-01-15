@@ -46,12 +46,12 @@ app.post('/Staff/viewReport', async (req, res) => {
 });
 
 app.post('/Staff/StudentList', async (req, res) => {
-    const { staff_id, course_id, date, studentList } = req.body;
+    const { student_id, course_id, date, studentList } = req.body;
 
     try {
         // You can handle the studentList data, perform validation, and store it in your database
         // For example, assuming you have a function in your 'view' module named 'saveStudentList'
-        await view.saveStudentList(client, staff_id, course_id, date, studentList);
+        await view.saveStudentList(client, student_id, course_id, date, studentList);
 
         return res.status(200).json({ message: "Student list saved successfully" });
     } catch (error) {
