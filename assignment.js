@@ -54,7 +54,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/Admin/AddStudent', verifyToken, async (req, res) => {
+app.post('/Admin/createStudent', verifyToken, async (req, res) => {
   const { username, password, role, student_id, email } = req.body;
 
   try {
@@ -79,6 +79,19 @@ app.post('/Admin/AddStudent', verifyToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/Admin/createStaff', async (req, res) => {
+  const { username, password, role, email, staff_id } = req.body;
+
+  try {
+      const createdUser = await createStaff(username, password, role, email, staff_id);
+      console.log(createdUser);
+      return res.status(201).send("Staff created successfully");
+  } catch (error) {
+      console.error(error);
+      return res.status(500).send("Internal Server Error");
   }
 });
 
@@ -159,6 +172,58 @@ app.post('/Admin/createPrograms', async (req, res) => {
 }
 });
 
+app.post('/faculty/create-subject', async (req, res) => {
+  const { name, code, faculty, program, credit } = req.body;
+
+  try {
+      const result = await createSubject(name, code, faculty, program, credit);
+      console.log(result);
+      return res.status(201).send("Subject created successfully");
+  } catch (error) {
+      console.error(error);
+      return res.status(500).send("Internal Server Error");
+  }
+});
+
+async function createStaff(username, password, role, email, staff_id) {
+  try {
+      const database = client.db('AttendanceManagementSystem');
+      const collection = database.collection('User');
+
+      // Check if the staff member already exists
+      const existingStaff = await collection.findOne({ username: username });
+
+      if (!existingStaff) {
+          // Hash the password before storing it
+          const hashedPassword = await bcrypt.hash(password, 10);
+
+          // Create a new staff member
+          const user = {
+              username: username,
+              password: hashedPassword,
+              role: role,
+              email: email,
+              staff_id: staff_id,
+          };
+
+          // Insert the new staff member into the 'User' collection
+          await collection.insertOne(user);
+          console.log("User created successfully");
+
+          // Return the created user data without the password
+          delete user.password;
+          return user;
+      } else {
+          console.log("Staff member with the same username already exists");
+          throw new Error("Staff member with the same username already exists");
+      }
+  } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+  }
+}
+
+
 async function viewDetails(student_id) {
   try {
     const database = client.db('AttendanceManagementSystem');
@@ -222,8 +287,6 @@ async function viewReport(username, student_id, faculty, programme) {
 }
 
 
-
-
 async function RecordAttendance(student_id, date, status) {
   try {
     const database = client.db('AttendanceManagementSystem');
@@ -243,6 +306,29 @@ async function RecordAttendance(student_id, date, status) {
   }
 }
 
+async function createSubject(name, code, faculty, programme, credit) {
+  try {
+      const database = client.db('AttendanceManagementSystem');
+      const collection = database.collection('Subject');
+
+       // Create a user object
+      const subject = {
+        name: name,
+        code: code,
+        faculty: faculty,
+        program: programme,
+        credit: credit
+    };
+    // Insert the user object into the collection
+    await collection.insertOne(subject);
+    
+    console.log("Subject created successfully");
+  } catch (error) {
+    console.error("Error creating subject:", error);
+  }
+}
+      
+  
 async function verifyToken(req, res, next) {
   let header = req.headers.authorization;
   if (!header) {
