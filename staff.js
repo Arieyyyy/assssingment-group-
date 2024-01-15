@@ -64,19 +64,30 @@ async function run() {
 
 run().catch(console.dir);
 
-// Route to handle saving student list
 app.post('/Staff/StudentList', async (req, res) => {
-    const { staff_id } = req.body;
+  try {
+    // Implement the logic to retrieve the student list
+    const studentList = await retrieveStudentList();
+    console.log(studentList); // Optional: Print the student list to the console
 
-    try {
-        const studentList = await getStudentListForStaff(staff_id);
-        console.log(studentList);
-        return res.status(200).json({ data: studentList, message: "Successful" });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
+    return res.status(200).json({ data: studentList, message: "Successful" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
 });
+
+async function retrieveStudentList() {
+  try {
+    const database = client.db('AttendanceManagementSystem');
+    const collection = database.collection('faculties');
+
+    const studentList = await collection.find().toArray();
+    return studentList;
+  } catch (error) {
+    console.error("Error retrieving student list:", error);
+  }
+}
 
 
 // Start the server
