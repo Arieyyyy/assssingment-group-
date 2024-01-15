@@ -65,27 +65,32 @@ async function run() {
 run().catch(console.dir);
 
 app.post('/Staff/StudentList', async (req, res) => {
-  try {
-    // Implement the logic to retrieve the student list
-    const studentList = await retrieveStudentList();
-    console.log(studentList); // Optional: Print the student list to the console
+  const { student_id, course_id, date, faculty } = req.body;
 
-    return res.status(200).json({ data: studentList, message: "Successful" });
+  try {
+    await saveStudentList(student_id, course_id, date, faculty);
+    return res.status(200).json({ message: "Student list saved successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).send("Internal Server Error");
   }
 });
 
-async function retrieveStudentList() {
+async function saveStudentList(student_id, course_id, date, faculty) {
   try {
     const database = client.db('AttendanceManagementSystem');
-    const collection = database.collection('faculties');
+    const collection = database.collection('Faculties');
 
-    const studentList = await collection.find().toArray();
-    return studentList;
+    // Replace the logic below with your actual implementation
+    // Save the student list to the "Faculties" collection
+    await collection.insertOne({
+      student_id: student_id,
+      course_id: course_id,
+      date: date,
+      faculty: faculty
+    });
   } catch (error) {
-    console.error("Error retrieving student list:", error);
+    console.error("Error saving student list:", error);
   }
 }
 
