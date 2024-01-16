@@ -96,9 +96,9 @@ app.post('/Admin/createStaff', async (req, res) => {
 });
 
 app.post('/Students/RecordAttendance', (req, res) => {
-  const { student_id, date, status } = req.body;
+  const { student_id, date, status, time } = req.body;
   try {
-    RecordAttendance(student_id, date, status);
+    RecordAttendance(student_id, date, status, time);
     res.status(201).send("Attendance recorded successfully");
   } catch (error) {
 
@@ -325,7 +325,7 @@ async function viewReport(username, student_id, faculty, programme) {
 }
 
 
-async function RecordAttendance(student_id, date, status) {
+async function RecordAttendance(student_id, date, status, time) {
   try {
     const database = client.db('AttendanceManagementSystem');
     const collection = database.collection('Attendances');
@@ -334,6 +334,7 @@ async function RecordAttendance(student_id, date, status) {
       student_id: student_id,
       date: date,
       status: status,
+      time:time
     };
 
     await collection.insertOne(user);
