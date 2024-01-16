@@ -185,11 +185,11 @@ app.post('/faculty/create-subject', async (req, res) => {
   }
 });
 
-app.post('/view-student-list', second, async (req, res) => {
+app.post('/viewStudentList', async (req, res) => {
   try {
     const list = await viewStudentList();
     console.log(list);
-    return res.status(201).send("View successfully completed");
+    return res.status(201).send("View Student List successfully completed");
   }
   catch (error) {
     console.error(error);
@@ -318,6 +318,7 @@ async function RecordAttendance(student_id, date, status) {
   }
 }
 
+
 async function createSubject(name, code, faculty, programme, credit) {
   try {
       const database = client.db('AttendanceManagementSystem');
@@ -337,6 +338,21 @@ async function createSubject(name, code, faculty, programme, credit) {
     console.log("Subject created successfully");
   } catch (error) {
     console.error("Error creating subject:", error);
+  }
+}
+
+async function viewStudentList() {
+  try {
+    const database = client.db('AttendanceManagementSystem');
+    const collection = database.collection('User');
+
+    // Find the user by username
+    const user = await collection.find({ role: {$eq:"student"} }).toArray();
+
+    return user;
+  } catch (error) {
+    console.error('Error finding user by username:', error);
+    throw error;
   }
 }
       
