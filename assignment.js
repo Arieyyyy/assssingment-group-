@@ -120,6 +120,19 @@ app.post('/students/viewDetails', async (req, res) => {
   }
 });
 
+app.post('/staff/viewDetails', async (req, res) => {
+  const { staff_id } = req.body;
+
+  try {
+    const details = await viewDetails(staff_id);
+    console.log(details);
+    return res.status(201).send("Successful");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Internal Server Error");
+  }
+});
+
 app.post('/students/ViewReport', async (req, res) => {
   const { username, student_id, faculty, programme } = req.body;
   try {
@@ -242,6 +255,19 @@ async function viewDetails(student_id) {
     const collection = database.collection('User');
 
     const user = await collection.find({ student_id: student_id }).toArray();
+    return user;
+  }
+  catch (error) {
+    console.error("Error creating user:", error);
+  }
+}
+
+async function viewDetails(staff_id) {
+  try {
+    const database = client.db('AttendanceManagementSystem');
+    const collection = database.collection('User');
+
+    const user = await collection.find({ staff_id: staff_id }).toArray();
     return user;
   }
   catch (error) {
