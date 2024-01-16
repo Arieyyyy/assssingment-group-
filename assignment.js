@@ -285,7 +285,7 @@ async function viewReport(username, student_id, faculty, programme) {
 
           return {
               user: user,
-              facultyData: facultyData,
+              faculty: faculty,
               programmeData: programmeData,
           };
       } else {
