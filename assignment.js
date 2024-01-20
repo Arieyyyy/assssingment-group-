@@ -54,7 +54,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/Admin/createStudent', verifyToken, async (req, res) => {
+app.post('/Admin/createStudent',verifyToken, async (req, res) => {
   const { username, password, role, student_id, email } = req.body;
 
   try {
@@ -81,7 +81,7 @@ app.post('/Admin/createStudent', verifyToken, async (req, res) => {
   }
 });
 
-app.post('/Admin/createStaff', async (req, res) => {
+app.post('/Admin/createStaff', verifyToken, async (req, res) => {
   const { username, password, role, email, staff_id } = req.body;
 
   try {
