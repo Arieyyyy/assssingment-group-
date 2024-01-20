@@ -94,7 +94,7 @@ app.post('/Admin/createStaff', verifyToken, async (req, res) => {
   }
 });
 
-app.post('/Students/RecordAttendance', (req, res) => {
+app.post('/Staff/Students/RecordAttendance',verifyToken1, (req, res) => {
   const { student_id, date, status, time } = req.body;
   try {
     RecordAttendance(student_id, date, status, time);
@@ -106,46 +106,33 @@ app.post('/Students/RecordAttendance', (req, res) => {
   }
 });
 
-app.post('/students/viewDetails', async (req, res) => {
+app.post('/students/viewDetailss', async (req, res) => {
   const { student_id } = req.body;
 
   try {
-    const details = await viewDetails(student_id);
+    const details = await viewDetailss(student_id);
     console.log(details);
-    return res.status(201).send("Successful");
+    return res.status(201).json(details);
   } catch (error) {
     console.error(error);
     return res.status(500).send("Internal Server Error");
   }
 });
 
-app.post('/staff/viewDetails', async (req, res) => {
+app.post('/Admin/staff/viewDetails', verifyToken, async (req, res) => {
   const { staff_id } = req.body;
 
   try {
     const details = await viewDetails(staff_id);
     console.log(details);
-    return res.status(201).send("Successful");
+    return res.status(201).json(details);
   } catch (error) {
     console.error(error);
     return res.status(500).send("Internal Server Error");
   }
 });
 
-app.post('/students/ViewReport', async (req, res) => {
-  const { username, student_id, faculty, programme } = req.body;
-  try {
-    const list = await viewReport(username, student_id, faculty, programme);
-    console.log(list);
-    return res.status(201).send("View Report Successful");
-  }
-  catch (error) {
-    console.error(error);
-    return res.status(500).send("Internal Server Error");
-  }
-})
-
-app.post('/Admin/createFaculty', async (req, res) => {
+app.post('/Admin/createFaculty', verifyToken, async (req, res) => {
   const { name, code, programs, students } = req.body;
   try {
 
@@ -164,7 +151,7 @@ app.post('/Admin/createFaculty', async (req, res) => {
   }
 });
 
-app.post('/Admin/createPrograms', async (req, res) => {
+app.post('/Admin/createPrograms', verifyToken, async (req, res) => {
   const { name, code, faculty, subject, students } = req.body;
   try {
 
@@ -184,7 +171,7 @@ app.post('/Admin/createPrograms', async (req, res) => {
   }
 });
 
-app.post('/faculty/create-subject', async (req, res) => {
+app.post('/Admin/create-subject', verifyToken, async (req, res) => {
   const { name, code, faculty, program, credit } = req.body;
 
   try {
@@ -197,11 +184,11 @@ app.post('/faculty/create-subject', async (req, res) => {
   }
 });
 
-app.post('/viewStudentList', async (req, res) => {
+app.post('/Admin/viewStudentList', verifyToken, async (req, res) => {
   try {
     const list = await viewStudentList();
     console.log(list);
-    return res.status(201).send("View Student List successfully completed");
+    return res.status(201).json(list);
   }
   catch (error) {
     console.error(error);
@@ -248,7 +235,7 @@ async function createStaff(username, password, role, email, staff_id) {
 }
 
 
-async function viewDetails(student_id) {
+async function viewDetailss(student_id) {
   try {
     const database = client.db('AttendanceManagementSystem');
     const collection = database.collection('User');
@@ -273,56 +260,6 @@ async function viewDetails(staff_id) {
     console.error("Error creating user:", error);
   }
 }
-
-async function viewReport(username, student_id, faculty, programme) {
-  try {
-    const database = client.db('AttendanceManagementSystem');
-    const usersCollection = database.collection('User');
-    const facultiesCollection = database.collection('Faculties');
-    const programmesCollection = database.collection('Programs');
-
-    // Query the 'Users' collection for user information
-    const userQuery = {
-      username: username,
-      student_id: student_id,
-    };
-    console.log("User Query:", userQuery);
-    const user = await usersCollection.findOne(userQuery);
-
-    console.log("User:", user);
-
-    if (user) {
-      // Query the 'Faculties' collection for faculty information
-      const facultyQuery = {
-        student_id: student_id,
-      };
-      console.log("Faculty Query:", facultyQuery);
-      const facultyData = await facultiesCollection.findOne(facultyQuery);
-      console.log("Faculty Data:", facultyData);
-
-      // Query the 'Programs' collection for programme information
-      const programmeQuery = {
-        name: programme,
-      };
-      console.log("Programme Query:", programmeQuery);
-      const programmeData = await programmesCollection.findOne(programmeQuery);
-      console.log("Programme Data:", programmeData);
-
-      return {
-        user: user,
-        faculty: faculty,
-        programmeData: programmeData,
-      };
-    } else {
-      console.log("User not found");
-      return null;
-    }
-  } catch (error) {
-    console.error("Error viewing report:", error);
-    throw error;
-  }
-}
-
 
 async function RecordAttendance(student_id, date, status, time) {
   try {
@@ -398,6 +335,29 @@ async function verifyToken(req, res, next) {
     else {
       console.log(decoded);
       if (decoded.role != 'Admin') {
+        return res.status(401).send('Again Unauthorized');
+      }
+    }
+    next();
+  });
+}
+
+
+async function verifyToken1(req, res, next) {
+  let header = req.headers.authorization;
+  if (!header) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  let token = header.split(' ')[1];
+
+  jwt.verify(token, 'your-secret-key', function (err, decoded) {
+    if (err) {
+      return res.status(401).send('Unauthorized');
+    }
+    else {
+      console.log(decoded);
+      if (decoded.role != 'staff') {
         return res.status(401).send('Again Unauthorized');
       }
     }
