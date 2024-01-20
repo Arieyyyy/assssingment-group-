@@ -54,7 +54,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/Admin/createStudent',verifyToken, async (req, res) => {
+app.post('/Admin/createStudent', verifyToken, async (req, res) => {
   const { username, password, role, student_id, email } = req.body;
 
   try {
