@@ -84,19 +84,37 @@ app.post('/Admin/createStudent', verifyToken, async (req, res) => {
 app.post('/Admin/createStaff', verifyToken, async (req, res) => {
   const { username, password, role, email, staff_id } = req.body;
 
+  // Check if the password is valid
   if (!password || !isValidPassword(password)) {
-    return res.status(400).send('Invalid password. Must contain at least one letter, one number, one special character, and be at least 8 characters long.');
+    return res.status(400).send('Invalid password. Password must contain at least one letter, one number, one special character (@$!%*?&), and be at least 8 characters long.');
   }
 
   try {
-    const createdUser = await createStaff(username, password, role, email, staff_id);
-    console.log(createdUser);
-    return res.status(201).send("Staff created successfully");
+    // Check if the username already exists
+    const existingUser = await client.db("AttendanceManagementSystem").collection("User").findOne({ username });
+    if (existingUser) {
+      return res.status(400).send('Username already exists');
+    }
+
+    // Hash the password
+    const hashedPassword = bcrypt.hashSync(password, 10);
+
+    // Insert the new staff into the database
+    await client.db("AttendanceManagementSystem").collection("User").insertOne({
+      username,
+      password: hashedPassword,
+      role,
+      email,
+      staff_id,
+    });
+
+    res.status(201).send('Staff created successfully');
   } catch (error) {
     console.error(error);
-    return res.status(500).send("Internal Server Error");
+    res.status(500).send('Internal Server Error');
   }
 });
+
 
 app.post('/Staff/Students/RecordAttendance',verifyToken1, (req, res) => {
   const { student_id, date, status, time } = req.body;
