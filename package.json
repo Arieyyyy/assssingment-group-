@@ -2,9 +2,9 @@
   "name": "assssingment-group-",
   "version": "1.0.0",
   "description": "assingment group ARIBAH, SHAHIRA, SYAHEERA, ALISSYA",
-  "main": "index.js",
+  "main": "assignment.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node assignment.js"
   },
   "author": "",
   "license": "ISC",
