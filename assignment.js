@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 1200;
 const bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 
@@ -83,6 +83,10 @@ app.post('/Admin/createStudent', verifyToken, async (req, res) => {
 
 app.post('/Admin/createStaff', verifyToken, async (req, res) => {
   const { username, password, role, email, staff_id } = req.body;
+
+  if (!password || !isValidPassword(password)) {
+    return res.status(400).send('Invalid password. Must contain at least one letter, one number, one special character, and be at least 8 characters long.');
+  }
 
   try {
     const createdUser = await createStaff(username, password, role, email, staff_id);
