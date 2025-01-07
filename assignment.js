@@ -95,7 +95,7 @@ app.post('/Admin/createStaff', verifyToken, async (req, res) => {
     if (existingUser) {
       return res.status(400).send('Username already exists');
     }
-
+ 
     // Hash the password
     const hashedPassword = bcrypt.hashSync(password, 10);
 
