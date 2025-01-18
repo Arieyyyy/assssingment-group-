@@ -32,6 +32,63 @@ async function run() {
 }
 run().catch(console.dir);
 
+function isValidPassword(password) {
+  const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  return passwordRegex.test(password);
+}
+
+app.post('/user', async (req, res) => {
+  const { username, password, role, email, staff_id } = req.body; // Removed student_id
+
+  try {
+    // Check if the username already exists
+    const existingUser = await client
+      .db("AttendanceManagementSystem")
+      .collection("User")
+      .findOne({ username: username });
+
+    if (existingUser) {
+      return res.status(400).send('Username already exists');
+    }
+
+    // Hash the password for security
+    const hashedPassword = bcrypt.hashSync(password, 10);
+
+    // Insert the new user into the database
+    await client.db("AttendanceManagementSystem").collection("User").insertOne({
+      username: username,
+      password: hashedPassword,
+      role: role,
+      staff_id: staff_id, // Only keeping staff_id
+      email: email
+    });
+
+    res.status(201).send('User created successfully');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('An error occurred while creating the user');
+  }
+});
+
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1]; // Get token from Authorization header
+  
+  if (!token) {
+    return res.status(401).send('Unauthorized - No token provided');
+  }
+
+  try {
+    // Decode the token using the secret key
+    const decoded = jwt.verify(token, 'okayyy');
+    console.log("Decoded token:", decoded); // Log decoded token to ensure staff_id is present
+    req.user = decoded;  // Attach decoded token to the request object (req.user)
+    next(); // Continue to the next middleware or route handler
+  } catch (error) {
+    console.error("Token verification failed:", error);
+    return res.status(401).send('Invalid token');
+  }
+};
+
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -84,12 +141,13 @@ app.post('/Admin/createStudent', verifyToken, async (req, res) => {
 app.post('/Admin/createStaff', verifyToken, async (req, res) => {
   const { username, password, role, email, staff_id } = req.body;
 
-  // Check if the password is valid
+  try {
+
+    // Check if the password is valid
   if (!password || !isValidPassword(password)) {
     return res.status(400).send('Invalid password. Password must contain at least one letter, one number, one special character (@$!%*?&), and be at least 8 characters long.');
   }
 
-  try {
     // Check if the username already exists
     const existingUser = await client.db("AttendanceManagementSystem").collection("User").findOne({ username });
     if (existingUser) {
@@ -128,43 +186,113 @@ app.post('/Staff/Students/RecordAttendance',verifyToken1, (req, res) => {
   }
 });
 
-app.post('/students/viewDetailss', async (req, res) => {
-  const { student_id } = req.body;
+
+const verifyTokenAndRole = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1]; // Extract the token from the header
+  
+  if (!token) {
+    return res.status(401).send('Unauthorized - No token provided');
+  }
 
   try {
-    const details = await viewDetailss(student_id);
-    console.log(details);
-    return res.status(201).json(details);
+    const decoded = jwt.verify(token, 'okayyy'); // Verify the token using the same secret key
+    console.log("Decoded token:", decoded); // Log decoded token to see its contents
+
+    req.user = decoded; // Store the decoded token in the request object
+    next();
   } catch (error) {
-    console.error(error);
-    return res.status(500).send("Internal Server Error");
+    console.error("Token verification failed:", error);
+    return res.status(401).send('Invalid token');
+  }
+};
+
+
+
+
+
+app.post('/students/viewDetails', verifyTokenAndRole, async (req, res) => {
+  const { student_id } = req.body;
+
+  if (!student_id) {
+    return res.status(400).send('student_id is required');
+  }
+
+  // Ensure the student is trying to access their own details
+  if (req.user.student_id !== student_id) {
+    return res.status(403).send('You can only view your own details');
+  }
+
+  try {
+    // Fetch the student details from the database
+    const details = await client
+      .db("AttendanceManagementSystem")
+      .collection("User")
+      .findOne({ student_id: student_id });
+
+    if (!details) {
+      return res.status(404).send('Student not found');
+    }
+
+    res.status(200).json(details); // Send the student's details as a response
+  } catch (error) {
+    console.error('Error fetching student details:', error);
+    res.status(500).send('Internal Server Error');
   }
 });
 
 app.post('/Admin/staff/viewDetails', verifyToken, async (req, res) => {
   const { staff_id } = req.body;
 
+  // Log the decoded token's staff_id and the requested staff_id to debug
+  console.log("Decoded token staff_id:", req.user.staff_id);
+  console.log("Requested staff_id:", staff_id);
+
+  // Ensure the user is either an admin or staff
+  if (!req.user || (req.user.role !== 'staff' && req.user.role !== 'admin')) {
+    return res.status(403).send('Access denied: Only staff or admin can view staff details');
+  }
+
+  // Allow staff to view their own details or allow admins to view anyone's details
+  if (req.user.role === 'staff' && req.user.staff_id !== staff_id) {
+    return res.status(403).send('Access denied: You can only view your own staff details');
+  }
+
   try {
+    // Fetch the staff details using the provided staff_i
+  
     const details = await viewDetails(staff_id);
     console.log(details);
-    return res.status(201).json(details);
+    return res.status(200).json(details);
   } catch (error) {
     console.error(error);
     return res.status(500).send("Internal Server Error");
   }
 });
 
-app.post('/Admin/createFaculty', verifyToken, async (req, res) => {
-  const { name, code, programs, students } = req.body;
-  try {
 
+
+// Role-based access control middleware
+const verifyRole = (roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).send('Access denied: Insufficient role');
+    }
+    next();
+  };
+};
+
+
+
+app.post('/Admin/createFaculty', verifyToken, verifyRole(['Admin', 'staff']), async (req, res) => {
+  const { name, code, programs, students } = req.body;
+  
+  try {
     await client.db("AttendanceManagementSystem").collection("Faculties").insertOne({
       name: name,
       code: code,
       programs: programs,
       students: students,
-
-    })
+    });
 
     res.send('Faculty created successfully');
   } catch (error) {
@@ -172,6 +300,7 @@ app.post('/Admin/createFaculty', verifyToken, async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 app.post('/Admin/createPrograms', verifyToken, async (req, res) => {
   const { name, code, faculty, subject, students } = req.body;
@@ -342,29 +471,6 @@ async function viewStudentList() {
 }
 
 
-async function verifyToken(req, res, next) {
-  let header = req.headers.authorization;
-  if (!header) {
-    return res.status(401).send('Unauthorized');
-  }
-
-  let token = header.split(' ')[1];
-
-  jwt.verify(token, 'your-secret-key', function (err, decoded) {
-    if (err) {
-      return res.status(401).send('Unauthorized');
-    }
-    else {
-      console.log(decoded);
-      if (decoded.role != 'Admin') {
-        return res.status(401).send('Again Unauthorized');
-      }
-    }
-    next();
-  });
-}
-
-
 async function verifyToken1(req, res, next) {
   let header = req.headers.authorization;
   if (!header) {
@@ -373,7 +479,7 @@ async function verifyToken1(req, res, next) {
 
   let token = header.split(' ')[1];
 
-  jwt.verify(token, 'your-secret-key', function (err, decoded) {
+  jwt.verify(token, 'okayyy', function (err, decoded) {
     if (err) {
       return res.status(401).send('Unauthorized');
     }
@@ -391,8 +497,10 @@ async function generateToken(user) {
   const token = jwt.sign({
     username: user.username,
     role: user.role,
+    student_id: user.student_id,
+    staff_id: user.staff_id,
   },
-    'your-secret-key',
+    'okayyy',
     { expiresIn: '365d' });
   return token;
 }
@@ -400,3 +508,4 @@ async function generateToken(user) {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
+
