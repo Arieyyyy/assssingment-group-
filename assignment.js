@@ -545,7 +545,7 @@ app.post('/students/viewDetails', verifyTokenStudent, async (req, res) => {
     return res.status(403).send('Access denied: You can only view your own details');
   }
 
-    res.status(200).json(details); // Send the student's details as a response
+    res.status(200).json(user); // Send the student's details as a response
   } catch (error) {
     console.error('Error fetching student details:', error);
     res.status(500).send('Internal Server Error');
